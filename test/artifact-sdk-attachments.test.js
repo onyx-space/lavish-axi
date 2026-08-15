@@ -84,8 +84,8 @@ test("the SDK bundle gates queuing until in-flight uploads settle (R2.4)", () =>
   assert.match(sdk, /function hasPending\(\)\s*\{\s*return items\.some\(\(item\) => item\.status === "uploading"\)/);
   assert.match(sdk, /if \(attachments\.hasPending\(\)\)/);
   assert.match(sdk, /Waiting for an image to finish uploading/);
-  // "Send now" only fires when the queue actually happened.
-  assert.match(sdk, /const queued = tryQueue\(\);\s*\n?\s*[\s\S]*?if \(queued && sendNow\) sendQueuedPrompts\(\)/);
+  // Enter（无修饰键）即排队并发送（fork 定制）。
+  assert.match(sdk, /const queued = tryQueue\(\);\s*\n?\s*[\s\S]*?if \(queued\) sendQueuedPrompts\(\)/);
 });
 
 test("the count-cap notice reads as an error, not as the passive keyboard hint", () => {

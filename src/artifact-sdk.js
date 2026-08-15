@@ -2169,9 +2169,9 @@ export function createArtifactSdk(
       '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
       "<span>附加图片</span></button>" +
       '<input class="lavish-attach-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>' +
-      '<div class="lavish-hint">回车排队 &middot; ' +
+      '<div class="lavish-hint">回车直接发送 &middot; ' +
       sendNowHint +
-      "+回车发送 &middot; 粘贴或拖入图片" +
+      "+回车也发送 &middot; 粘贴或拖入图片" +
       '</div><div class="lavish-row"><button class="lavish-cancel" type="button">取消</button><button class="lavish-send" type="button">排队</button></div>';
     root.appendChild(card);
 
@@ -2289,10 +2289,10 @@ export function createArtifactSdk(
     textarea.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
         event.preventDefault();
-        const sendNow = (event.ctrlKey || event.metaKey) && (!!textarea.value.trim() || attachments.hasReady());
+        // 排队即发送：Enter 直接排队并提交（fork 定制，与「排队」按钮一致）
         const queued = tryQueue();
         // postMessage delivery is ordered, so the queued prompt lands before the send.
-        if (queued && sendNow) sendQueuedPrompts();
+        if (queued) sendQueuedPrompts();
       }
     });
     // Unsent annotation text is review context Lavish owns, so it is reported to the chrome and

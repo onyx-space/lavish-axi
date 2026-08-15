@@ -4068,13 +4068,13 @@ test("annotation card queues prompt on Enter and inserts newline on Shift+Enter"
   assert.match(js, /const queued = tryQueue\(\)/);
 });
 
-test("annotation card queues and sends immediately on Ctrl+Enter or Cmd+Enter", () => {
+test("annotation card queues and sends immediately on Enter", () => {
   const js = createSdkJs("abc");
 
-  assert.match(js, /event\.ctrlKey \|\| event\.metaKey/);
+  assert.doesNotMatch(js, /event\.ctrlKey \|\| event\.metaKey/);
   assert.match(js, /sendQueuedPrompts\(\)/);
   assert.match(js, /class="lavish-hint"/);
-  assert.match(js, /\+回车发送/);
+  assert.match(js, /\+回车也发送/);
   assert.match(js, /\.lavish-annotation-card \.lavish-hint\{/);
 });
 

@@ -252,8 +252,9 @@ async function openCommand(args) {
   const noGate = args.includes("--no-gate");
   const reopen = args.includes("--reopen");
   const baseUrl = await ensureServer({
-    // 仓库源码模式下每次打开都强制重启 server，确保改动立即生效（fork 定制）
-    forceRestart: shouldForceRestartForLocalBuild(process.argv[1] || "") || localSourceServerExists(),
+    // 源码模式用 bin 跑时 CLI 与 server 同源同版本，无需重启；
+    // 直接跑 dist/cli.mjs 时强制重启确保改动生效（fork 定制）
+    forceRestart: shouldForceRestartForLocalBuild(process.argv[1] || ""),
   });
   const response = await postJson(`${baseUrl}/api/sessions`, { file: absolute, noGate, reopen });
   if (response.status === "user-ended") {
