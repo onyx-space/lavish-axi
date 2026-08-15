@@ -919,7 +919,7 @@ body.lavish {
 }
 
 .chat:empty::before {
-  content: "Agent hasn't sent a message yet. Click an element in the artifact to annotate, or type below to start.";
+  content: "Agent 还没发消息。点击产物里的元素做标注，或在下方输入开始。";
   margin-top: 2px;
   color: var(--fg-muted);
   font-size: 13px;

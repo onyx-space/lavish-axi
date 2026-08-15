@@ -150,7 +150,7 @@ test(
       const detected = inbox();
       assert.equal(detected.hidden, false, "the warning button appears once there is unresolved work");
       assert.equal(detected.badge, "3");
-      assert.equal(detected.label, "3 unresolved layout issues");
+      assert.equal(detected.label, "3 个未解决布局问题");
       assert.equal(detected.gate, false, "the artifact is revealed, not held hostage pending a repair");
       assert.equal(detected.loads, 0, "detection alone never refreshes the artifact");
       assert.equal(detected.pills, 0, "detection alone never queues feedback");
@@ -240,7 +240,7 @@ test(
       const mobileDetected = inbox();
       assert.ok(Number(mobileDetected.badge) > 3, "a second viewport adds its own warnings");
       assert.ok(
-        mobileDetected.rows.some((row) => row.viewport.startsWith("Desktop")),
+        mobileDetected.rows.some((row) => row.viewport.startsWith("桌面")),
         "a mobile pass cannot clear a desktop warning",
       );
 
@@ -253,17 +253,17 @@ test(
       // queueing does not clear anything.
       // ---------------------------------------------------------------------
       const beforeQueue = inbox();
-      const desktopRows = beforeQueue.rows.filter((row) => row.viewport.startsWith("Desktop"));
+      const desktopRows = beforeQueue.rows.filter((row) => row.viewport.startsWith("桌面"));
       assert.equal(desktopRows.length, 3);
 
       const selected = evaluate(
         '(() => { document.getElementById("warningsButton").click();' +
-          ' const rows = [...document.querySelectorAll(".warning-row")].filter((row) => [...row.querySelectorAll(".warning-chip")][2].textContent.startsWith("Desktop"));' +
+          ' const rows = [...document.querySelectorAll(".warning-row")].filter((row) => [...row.querySelectorAll(".warning-chip")][2].textContent.startsWith("桌面"));' +
           ' rows[0].querySelector(".warning-select").click(); rows[2].querySelector(".warning-select").click();' +
           ' return JSON.stringify({ selected: document.getElementById("warningsSelected").textContent, queueDisabled: document.getElementById("warningsQueueButton").disabled,' +
           ' targets: [rows[0].querySelector(".warning-target").textContent, rows[2].querySelector(".warning-target").textContent] }); })()',
       );
-      assert.equal(selected.selected, "2 selected");
+      assert.equal(selected.selected, "已选择 2 项");
       assert.equal(selected.queueDisabled, false);
 
       run("chrome-devtools-axi", ["eval", '() => document.getElementById("warningsQueueButton").click()'], chromeEnv);
@@ -298,7 +298,7 @@ test(
 
       const feedback = poll(artifact, 8000);
       assert.match(feedback, /tag:\s*layout-warnings/);
-      assert.match(feedback, /Layout issues: 2 selected/);
+      assert.match(feedback, /已选中 2 个布局问题/);
       assert.doesNotMatch(feedback, /^layout_warnings\[/m, "no parallel agent protocol at the CLI boundary");
       assert.doesNotMatch(feedback, /artifact_failures/);
       for (const target of selected.targets) {
@@ -340,17 +340,17 @@ test(
       // ---------------------------------------------------------------------
       // Lifecycle: repaired findings resolve, a queued finding still present recurs.
       // ---------------------------------------------------------------------
-      const desktopAfter = afterFix.rows.filter((row) => row.viewport.startsWith("Desktop"));
+      const desktopAfter = afterFix.rows.filter((row) => row.viewport.startsWith("桌面"));
       assert.ok(
         desktopAfter.length < desktopRows.length,
         "a complete matching-viewport pass resolved the repaired issue",
       );
-      const recurring = desktopAfter.find((row) => row.status === "Still present");
+      const recurring = desktopAfter.find((row) => row.status === "仍然存在");
       if (recurring) {
         assert.equal(recurring.selectable, true, "a recurring warning can be queued again");
       }
       assert.ok(
-        desktopAfter.every((row) => row.status !== "Queued for fix"),
+        desktopAfter.every((row) => row.status !== "已排队待修复"),
         "a newer revision re-checks every outstanding request",
       );
 

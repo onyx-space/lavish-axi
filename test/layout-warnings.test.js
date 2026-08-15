@@ -91,7 +91,7 @@ test("every audit rule has human-readable context", () => {
     assert.ok(described.title.length > 0, rule);
     assert.ok(described.explanation.length > 0, rule);
   }
-  assert.equal(describeLayoutWarning({ rule: "something-new" }).title, "Layout failure");
+  assert.equal(describeLayoutWarning({ rule: "something-new" }).title, "布局故障");
 });
 
 test("a repeated observation of the same fingerprint updates one record", () => {
@@ -273,11 +273,11 @@ test("the queued prompt payload carries bounded structured warning detail", () =
   const detected = detect([OVERFLOW, CLIPPED], { revision: 2 });
   const payload = layoutWarningPromptPayload(detected);
 
-  assert.match(payload.prompt, /Fix these 2 layout issues/);
+  assert.match(payload.prompt, /修复浏览器在此产物中检测到的 这 2 个布局问题/);
   assert.match(payload.prompt, new RegExp(detected[0].id));
-  assert.match(payload.prompt, /one pass before saving so the review refreshes once/);
-  assert.match(payload.prompt, /not a resolved issue/);
-  assert.equal(payload.text, "Layout issues: 2 selected");
+  assert.match(payload.prompt, /一次性地把列出的所有修复都做掉再保存，这样审阅只刷新一次/);
+  assert.match(payload.prompt, /不等于已解决/);
+  assert.equal(payload.text, "已选中 2 个布局问题");
   assert.equal(payload.target.type, "layout-warnings");
   assert.equal(payload.target.warnings.length, 2);
   assert.equal(payload.target.warnings[1].rule, "clipped-text");
@@ -333,15 +333,15 @@ test("a queued prompt target is normalized and bounded", () => {
 test("stored records describe their real magnitude, not a zero", () => {
   const [warning] = serializeLayoutWarnings(detect([CLIPPED], { revision: 1, viewportWidth: 1080 }));
   assert.match(warning.explanation, /27px/);
-  assert.match(warning.explanation, /bottom edge/);
+  assert.match(warning.explanation, /下边缘/);
 });
 
 test("serialized warnings carry everything the drawer renders", () => {
   const detected = detect([CLIPPED], { revision: 1, viewportWidth: 390 });
   const [warning] = serializeLayoutWarnings(detected);
 
-  assert.equal(warning.status_label, "Open");
-  assert.equal(warning.viewport_label, "Mobile");
+  assert.equal(warning.status_label, "未解决");
+  assert.equal(warning.viewport_label, "手机");
   assert.equal(warning.viewport_width, 390);
   assert.equal(warning.component, "#copy");
   assert.ok(warning.title);

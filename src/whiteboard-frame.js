@@ -103,13 +103,13 @@ function buildShell(theme, mode) {
   document.body.dataset.lavishWhiteboardMode = mode;
   const shell = el("div", { id: "wbShell" });
   const header = el("header", { id: "wbHeader" });
-  const title = el("div", { id: "wbTitle", textContent: "Whiteboard" });
+  const title = el("div", { id: "wbTitle", textContent: "白板" });
   const note = el("input", {
     id: "wbNote",
-    placeholder: "Optional note for the agent about these edits...",
+    placeholder: "可选的给 agent 的备注（关于这些修改）...",
     autocomplete: "off",
   });
-  const queueButton = el("button", { id: "wbQueue", type: "button", textContent: "Queue feedback" });
+  const queueButton = el("button", { id: "wbQueue", type: "button", textContent: "排队反馈" });
   // In overlay mode the chrome renders the close control on top of this
   // header's right edge (it must work even when this frame fails to boot), so
   // the header reserves that space via CSS instead of adding its own close.
@@ -120,8 +120,8 @@ function buildShell(theme, mode) {
     const fullscreenButton = el("button", {
       id: "wbFullscreen",
       type: "button",
-      textContent: "Fullscreen",
-      title: "Open this whiteboard full screen",
+      textContent: "全屏",
+      title: "全屏打开此白板",
     });
     fullscreenButton.onclick = () => post({ type: "lavish-whiteboard:maximize", diagramIndex: state.diagramIndex });
     header.append(fullscreenButton);
@@ -133,24 +133,24 @@ function buildShell(theme, mode) {
   const linkConfirm = el("div", { id: "wbLinkConfirm", className: "wb-link-confirm", hidden: true });
   linkConfirm.setAttribute("role", "dialog");
   linkConfirm.setAttribute("aria-modal", "true");
-  linkConfirm.setAttribute("aria-label", "Open external link");
+  linkConfirm.setAttribute("aria-label", "打开外部链接");
   const linkConfirmCard = el("div", { className: "wb-link-confirm-card" });
-  const linkConfirmTitle = el("div", { className: "wb-link-confirm-title", textContent: "Open external link?" });
+  const linkConfirmTitle = el("div", { className: "wb-link-confirm-title", textContent: "打开外部链接？" });
   const linkConfirmCopy = el("p", {
     className: "wb-link-confirm-copy",
-    textContent: "This link came from the diagram.",
+    textContent: "这个链接来自图（diagram）。",
   });
   const linkConfirmUrl = el("p", { id: "wbLinkConfirmUrl", className: "wb-link-confirm-url" });
   const linkConfirmActions = el("div", { className: "wb-link-confirm-actions" });
   const linkConfirmCancel = el("button", {
     id: "wbLinkConfirmCancel",
     type: "button",
-    textContent: "Cancel",
+    textContent: "取消",
   });
   const linkConfirmOpen = el("button", {
     id: "wbLinkConfirmOpen",
     type: "button",
-    textContent: "Open link",
+    textContent: "打开链接",
   });
   linkConfirmActions.append(linkConfirmCancel, linkConfirmOpen);
   linkConfirmCard.append(linkConfirmTitle, linkConfirmCopy, linkConfirmUrl, linkConfirmActions);
@@ -158,7 +158,7 @@ function buildShell(theme, mode) {
   shell.append(header, fallbackBanner, staleBanner, status, editor, linkConfirm);
   document.body.append(shell);
 
-  queueButton.onclick = () => queueFeedback().catch((error) => showStatus(`Queue failed: ${describeError(error)}`));
+  queueButton.onclick = () => queueFeedback().catch((error) => showStatus(`排队失败：${describeError(error)}`));
   note.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.isComposing) {
       event.preventDefault();
@@ -273,7 +273,7 @@ function handleSaveResult(message) {
     }
     state.setLocked?.(false);
     const error = String(message.error || "failed to save whiteboard scene");
-    showStatus(`Could not save before closing: ${error}`, { transient: false });
+    showStatus(`关闭前保存失败：${error}`, { transient: false });
     post({ type: "lavish-whiteboard:teardownFailed", flushId, error });
     return;
   }
@@ -310,7 +310,7 @@ function onLinkOpen(element, event) {
   event.preventDefault();
   const safe = sanitizeSceneLink(element?.link);
   if (!safe) {
-    showStatus("Blocked a link with an unsupported or unsafe scheme.");
+    showStatus("阻止了一个不支持或不安全的协议链接。");
     return;
   }
   showLinkConfirmation(safe);
@@ -465,10 +465,7 @@ async function startFromConversion(init) {
   state.sceneSourceHash = init.sourceHash;
   state.textMetricsVersion = WHITEBOARD_TEXT_METRICS_VERSION;
   if (imageFallback) {
-    setBanner(
-      "wbFallbackBanner",
-      "This diagram type is not natively editable, so it is shown as an image - draw, annotate, and add shapes on top.",
-    );
+    setBanner("wbFallbackBanner", "这种图类型无法原生编辑，因此以图片形式展示 —— 可以在上面绘制、标注和添加形状。");
   }
   mountEditor({ elements, appState: defaultAppState(), files, theme: init.theme });
   scheduleSave();
@@ -506,10 +503,7 @@ async function startFromSavedScene(init) {
   state.imageFallback = sceneIsImageFallback(elements);
   state.sceneSourceHash = saved.source_hash || init.sourceHash;
   if (state.imageFallback) {
-    setBanner(
-      "wbFallbackBanner",
-      "This diagram type is not natively editable, so it is shown as an image - draw, annotate, and add shapes on top.",
-    );
+    setBanner("wbFallbackBanner", "这种图类型无法原生编辑，因此以图片形式展示 —— 可以在上面绘制、标注和添加形状。");
   }
   mountEditor({
     elements,
@@ -525,9 +519,9 @@ async function startFromSavedScene(init) {
 // edits) and continuing on the saved scene.
 function offerStaleChoice() {
   const staleBanner = document.getElementById("wbStaleBanner");
-  staleBanner.textContent = "This diagram changed since these whiteboard edits were saved. ";
-  const reconvert = el("button", { type: "button", textContent: "Re-convert (discard saved edits)" });
-  const keep = el("button", { type: "button", textContent: "Keep editing saved scene" });
+  staleBanner.textContent = "此图自这些白板编辑保存后发生了变化。 ";
+  const reconvert = el("button", { type: "button", textContent: "重新转换（丢弃已保存的编辑）" });
+  const keep = el("button", { type: "button", textContent: "继续编辑已保存的场景" });
   staleBanner.append(reconvert, keep);
   staleBanner.hidden = false;
   return new Promise((resolve) => {
@@ -536,8 +530,7 @@ function offerStaleChoice() {
       resolve("reconvert");
     };
     keep.onclick = () => {
-      staleBanner.textContent =
-        "Editing a scene converted from an older version of this diagram. Re-open the whiteboard to convert the latest diagram.";
+      staleBanner.textContent = "正在编辑一个由旧版图转换的场景。重新打开白板以转换最新版图。";
       resolve("keep");
     };
   });
@@ -548,7 +541,7 @@ async function queueFeedback() {
   state.queueBusy = true;
   const queueButton = /** @type {HTMLButtonElement} */ (document.getElementById("wbQueue"));
   queueButton.disabled = true;
-  queueButton.textContent = "Queueing...";
+  queueButton.textContent = "排队中...";
   try {
     const scene = currentScene();
     const summary = summarizeSceneEdits(state.baselineElements, scene.elements);
@@ -594,7 +587,7 @@ function resetQueueButton() {
   const queueButton = /** @type {HTMLButtonElement | null} */ (document.getElementById("wbQueue"));
   if (queueButton) {
     queueButton.disabled = false;
-    queueButton.textContent = "Queue feedback";
+    queueButton.textContent = "排队反馈";
   }
 }
 
@@ -624,7 +617,7 @@ async function handleInit(init) {
       await startFromConversion({ ...init, theme });
     }
   } catch (error) {
-    showStatus(`Could not open this diagram as a whiteboard: ${describeError(error)}`, { transient: false });
+    showStatus(`无法将此图作为白板打开：${describeError(error)}`, { transient: false });
   }
 }
 
@@ -632,10 +625,7 @@ function handleSourceChanged(message) {
   state.currentSource = String(message.source || "");
   state.currentSourceHash = String(message.sourceHash || "");
   if (state.currentSourceHash !== state.sceneSourceHash) {
-    setBanner(
-      "wbStaleBanner",
-      "The underlying diagram changed while you were editing. Your edits are kept; close and re-open the whiteboard to convert the latest diagram.",
-    );
+    setBanner("wbStaleBanner", "你编辑期间底层的图发生了变化。你的编辑已保留；关闭并重新打开白板以转换最新版图。");
   } else {
     setBanner("wbStaleBanner", "");
   }
@@ -667,9 +657,9 @@ function main() {
       if (msg.ok) {
         const note = /** @type {HTMLInputElement | null} */ (document.getElementById("wbNote"));
         if (note) note.value = "";
-        showStatus("Queued. Review it in the conversation panel, then Send to Agent.");
+        showStatus("已排队。在对话面板中查看，然后点发送给 Agent。");
       } else {
-        showStatus(`Queue failed: ${String(msg.error || "unknown error")}`, { transient: false });
+        showStatus(`排队失败：${String(msg.error || "未知错误")}`, { transient: false });
       }
     }
   });

@@ -284,7 +284,7 @@ test("annotation card does not block its own Queue button", () => {
 test("annotation card labels its submit action as Queue", () => {
   const js = createSdkJs("abc");
 
-  assert.match(js, />Queue<\/button>/);
+  assert.match(js, />排队<\/button>/);
   assert.doesNotMatch(js, /Queue Prompt/);
 });
 
@@ -381,7 +381,7 @@ test("the annotate switch exposes the mode toggle hotkey as a discoverable toolt
   const html = createChromeHtml({ key: "abc", file: "/tmp/artifact.html" });
 
   assert.match(html, /"modeToggleHotkeyKey":"i"/);
-  assert.match(html, /id="annotation"[^>]*title="Toggle annotate\/explore mode \(⌘I \/ Ctrl\+I\)"/);
+  assert.match(html, /id="annotation"[^>]*title="切换标注\/浏览模式 \(⌘I \/ Ctrl\+I\)"/);
 });
 
 test("artifact SDK lets marked feedback controls handle their own clicks", () => {
@@ -439,7 +439,7 @@ test("turning annotation mode off clears selection and floating card", () => {
 test("annotation card title renders selected tag as an html element name", () => {
   const js = createSdkJs("abc");
 
-  assert.match(js, /"Annotate &lt;" \+ c\.tag \+ "&gt;"/);
+  assert.match(js, /"标注 &lt;" \+ c\.tag \+ "&gt;"/);
 });
 
 test("annotation card shadow styles use Lavish design-system variables", () => {
@@ -457,7 +457,7 @@ test("chrome top bar uses an Annotate switch instead of a labeled toggle button"
 
   assert.match(html, /class="annotate-switch" id="annotation"[^>]*aria-pressed="true"/);
   assert.match(html, /class="switch-track"/);
-  assert.match(html, />Annotate</);
+  assert.match(html, />标注</);
   assert.doesNotMatch(html, /Annotation: On/);
   assert.doesNotMatch(html, /Inspect/);
 });
@@ -536,8 +536,8 @@ test("overflow menu shows the artifact path with a copy affordance", async () =>
   const html = createChromeHtml({ key: "abc", file: "/tmp/artifact/index.html" });
   const css = await chromeCssSource();
 
-  assert.match(html, /class="menu-label">Editing</);
-  assert.match(html, /class="menu-file" id="copyPath"[^>]*title="Copy path · \/tmp\/artifact\/index\.html"/);
+  assert.match(html, /class="menu-label">编辑</);
+  assert.match(html, /class="menu-file" id="copyPath"[^>]*title="复制路径 · \/tmp\/artifact\/index\.html"/);
   assert.match(html, /class="copy-hint"/);
   assert.match(css, /\.menu-file\{[^}]*font-family:var\(--font-mono\)/);
   assert.match(css, /\.copy-hint\.copied\{color:var\(--accent-hover\)/);
@@ -563,7 +563,7 @@ test("overflow menu path shortens the home directory to a tilde", () => {
   assert.match(html, /class="path-head">~\/projects\/demo\/</);
   assert.match(html, /class="path-tail">artifact\.html</);
   // The copy affordance still carries the absolute path.
-  assert.ok(html.includes(`title="Copy path · ${file}"`));
+  assert.ok(html.includes(`title="复制路径 · ${file}"`));
 });
 
 test("overflow menu path display tolerates Windows separators", () => {
@@ -580,17 +580,17 @@ test("chrome can copy the full file path from the overflow menu", async () => {
   assert.match(html, /"file":"\/tmp\/artifact\.html"/);
   assert.match(js, /const filePath = String\(sessionData\.file \|\| ""\)/);
   assert.match(js, /copyText\(filePath\)/);
-  assert.match(js, /copyHintText\.textContent = "Copied"/);
-  assert.match(js, /copyHintText\.textContent = "Copy"/);
+  assert.match(js, /copyHintText\.textContent = "已复制"/);
+  assert.match(js, /copyHintText\.textContent = "复制"/);
 });
 
 test("overflow menu offers reload, snapshot copy, and end session actions", async () => {
   const html = createChromeHtml({ key: "abc", file: "/tmp/artifact.html" });
   const js = await chromeClientSource();
 
-  assert.match(html, /id="reloadArtifact"[^<]*>.*Reload artifact/);
-  assert.match(html, /id="copySnapshot"[^<]*>.*Copy DOM snapshot/);
-  assert.match(html, /class="menu-item danger" id="end"[^<]*>.*End session/);
+  assert.match(html, /id="reloadArtifact"[^<]*>.*重新加载产物/);
+  assert.match(html, /id="copySnapshot"[^<]*>.*复制 DOM 快照/);
+  assert.match(html, /class="menu-item danger" id="end"[^<]*>.*结束会话/);
   assert.doesNotMatch(html, /End Session</);
   assert.match(js, /event\.key === "Escape"/);
 });
@@ -599,7 +599,7 @@ test("overflow menu offers a standalone HTML export that downloads a portable fi
   const html = createChromeHtml({ key: "abc", file: "/tmp/artifact.html" });
   const js = await chromeClientSource();
 
-  assert.match(html, /id="exportArtifact"[^<]*>.*Export standalone HTML/);
+  assert.match(html, /id="exportArtifact"[^<]*>.*导出独立 HTML/);
   assert.match(js, /const exportArtifactButton/);
   assert.match(js, /async function exportArtifact/);
   assert.match(js, /fetch\("\/api\/" \+ key \+ "\/export"\)/);
@@ -612,17 +612,17 @@ test("overflow menu offers publishing an ht-ml.app link via a share dialog", asy
   const js = await chromeClientSource();
   const css = await chromeCssSource();
 
-  assert.match(html, /id="shareArtifact"[^<]*>.*Publish link/);
+  assert.match(html, /id="shareArtifact"[^<]*>.*发布链接/);
   assert.match(html, /id="shareDialog"/);
   assert.match(
     html,
-    /Publish to <a class="share-link" href="https:\/\/ht-ml\.app" target="_blank" rel="noopener noreferrer">ht-ml\.app<\/a>/,
+    /发布到 <a class="share-link" href="https:\/\/ht-ml\.app" target="_blank" rel="noopener noreferrer">ht-ml\.app<\/a>/,
   );
-  assert.match(html, /third-party hosting service, not part of Lavish/);
+  assert.match(html, /独立的第三方托管服务，不属于 Lavish 的一部分/);
   assert.match(html, /id="sharePassword"/);
   assert.match(html, /id="shareUpdateKey"/);
-  assert.match(html, /Without a password, the page is PUBLIC/);
-  assert.match(html, /With a password, the page is PRIVATE/);
+  assert.match(html, /不设密码时页面是公开的/);
+  assert.match(html, /设密码时页面是私有的/);
   assert.doesNotMatch(html, /Everything published is public/);
   assert.doesNotMatch(html, /Get a public link/);
   assert.match(css, /\.share-overlay/);
@@ -693,7 +693,7 @@ test("chrome includes a chat-like prompt composer and agent reply listener", asy
   assert.match(html, /id="chatLog"/);
   const css = await chromeCssSource();
   assert.match(css, /\.chat:empty::before\{/);
-  assert.match(css, /Agent hasn't sent a message yet/);
+  assert.match(css, /Agent 还没发消息/);
   assert.match(html, /id="chatInput"/);
   assert.match(js, /agent-reply/);
 });
@@ -726,7 +726,7 @@ test("chrome shows agent working state when a previous poll has released", async
   const js = await chromeClientSource();
 
   assert.match(js, /agent-presence/);
-  assert.match(js, /Working\.\.\./);
+  assert.match(js, /正在处理\.\.\./);
   assert.match(js, /spinner/);
 });
 
@@ -745,7 +745,7 @@ test("sending with an empty composer nudges instead of blocking", async () => {
   const js = await chromeClientSource();
   const css = await chromeCssSource();
 
-  assert.match(html, /class="send-hint" id="sendHint" hidden>Write a message or annotate an element first\.<\/div>/);
+  assert.match(html, /class="send-hint" id="sendHint" hidden>请先写消息或标注一个元素。<\/div>/);
   assert.match(js, /function showSendHint\(message = DEFAULT_SEND_HINT/);
   assert.match(js, /sendHint\.hidden = false/);
   assert.match(js, /chatInput\.focus\(\)/);
@@ -756,11 +756,11 @@ test("composer offers two always-visible top-level send actions", async () => {
   const html = createChromeHtml({ key: "abc", file: "/tmp/artifact.html" });
   const css = await chromeCssSource();
 
-  assert.match(html, /class="button" id="send">Send to Agent</);
-  assert.match(html, /class="button button-danger" id="sendAndEnd"[^<]*>.*Send &amp; End</);
+  assert.match(html, /class="button" id="send">发送给 Agent</);
+  assert.match(html, /class="button button-danger" id="sendAndEnd"[^<]*>.*发送并结束</);
   assert.match(
     html,
-    /<div class="send-hint" id="sendHint" hidden>Write a message or annotate an element first\.<\/div><div class="actions" id="sendActions"><button class="button button-danger" id="sendAndEnd" type="button">.*<button class="button" id="send">Send to Agent<\/button><\/div>/,
+    /<div class="send-hint" id="sendHint" hidden>请先写消息或标注一个元素。<\/div><div class="actions" id="sendActions"><button class="button button-danger" id="sendAndEnd" type="button">.*<button class="button" id="send">发送给 Agent<\/button><\/div>/,
   );
   assert.doesNotMatch(html, /id="sendCaret"/);
   assert.doesNotMatch(html, /id="sendMenu"/);
@@ -794,7 +794,7 @@ test("chrome shows a waiting banner when no agent has attached", async () => {
   const css = await chromeCssSource();
 
   assert.match(html, /id="presenceBanner"/);
-  assert.match(html, /Your agent is not listening/);
+  assert.match(html, /你的 agent 当前没有在监听/);
   assert.match(js, /presenceBanner\.hidden = ended \|\| agentPresence !== "waiting"/);
   assert.match(css, /\.presence-banner\{/);
 });
@@ -2591,7 +2591,7 @@ test("the chrome bootstraps the inbox so it survives a browser refresh", async (
     const html = await fetch(`${base}/session/${key}`).then((res) => res.text());
     assert.match(html, /id="warningsButton"/);
     assert.match(html, /initialLayoutWarnings/);
-    assert.match(html, /Text cut off by its container/);
+    assert.match(html, /文本被容器截断/);
   } finally {
     await server.close();
     await rm(dir, { recursive: true, force: true });
@@ -4022,8 +4022,8 @@ test("ended session shows an overlay card over the dimmed chrome", async () => {
 
   assert.match(html, /class="ended-overlay" id="endedOverlay" hidden/);
   assert.match(html, /class="ended-card"/);
-  assert.match(html, /Session ended\./);
-  assert.match(html, /Return to your agent to continue\./);
+  assert.match(html, /会话已结束。/);
+  assert.match(html, /返回你的 agent 继续。/);
   assert.match(html, /class="ended-copy">\/tmp\/artifact\.html</);
   assert.doesNotMatch(html, /The agent polling loop can stop\./);
   assert.match(css, /\.ended-overlay\{[^}]*inset:var\(--bar-h\) 0 0 0/);
@@ -4047,9 +4047,9 @@ test("layout gate curtain reuses the ended overlay card styling", async () => {
   );
   assert.doesNotMatch(html, /<iframe id="artifact"[^>]* src=/);
   assert.match(html, /class="ended-overlay layout-gate-overlay" id="layoutGateOverlay"/);
-  assert.match(html, /<div class="ended-card"><div class="ended-title" id="layoutGateTitle">Checking layout/);
+  assert.match(html, /<div class="ended-card"><div class="ended-title" id="layoutGateTitle">正在检查布局/);
   assert.match(html, /class="ended-copy" id="layoutGateCopy"/);
-  assert.match(html, /class="button ended-action" id="layoutGateAction" type="button">Show anyway/);
+  assert.match(html, /class="button ended-action" id="layoutGateAction" type="button">仍要显示/);
   assert.match(css, /body\.layout-gate-active iframe#artifact\{[^}]*opacity:0/);
   assert.match(css, /\.ended-action\{[^}]*margin-top:var\(--space-8\)/);
   assert.match(js, /layoutGateAction\.onclick = \(\) => forceRevealLayoutGate\("manual"\)/);
@@ -4074,7 +4074,7 @@ test("annotation card queues and sends immediately on Ctrl+Enter or Cmd+Enter", 
   assert.match(js, /event\.ctrlKey \|\| event\.metaKey/);
   assert.match(js, /sendQueuedPrompts\(\)/);
   assert.match(js, /class="lavish-hint"/);
-  assert.match(js, /\+Enter to send/);
+  assert.match(js, /\+回车发送/);
   assert.match(js, /\.lavish-annotation-card \.lavish-hint\{/);
 });
 

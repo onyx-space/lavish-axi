@@ -282,18 +282,18 @@ function render() {
     .map(
       (prompt, index) =>
         '<div class="pill-wrap"><div class="pill"><span class="pill-preview">' +
-        escapeHtml(prompt.prompt || (attachmentCount(prompt) ? "Image annotation" : "")) +
+        escapeHtml(prompt.prompt || (attachmentCount(prompt) ? "图片标注" : "")) +
         "</span>" +
         pillAttachmentsHtml(prompt) +
-        '<button class="pill-close" type="button" aria-label="Remove queued prompt" data-index="' +
+        '<button class="pill-close" type="button" aria-label="移除已排队的提示" data-index="' +
         index +
         '"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" focusable="false"><path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div><div class="pill-tooltip">' +
         (prompt.selector
-          ? '<div class="tooltip-label">Target</div><div class="pill-tooltip-target">' +
+          ? '<div class="tooltip-label">目标</div><div class="pill-tooltip-target">' +
             escapeHtml(prompt.selector) +
             "</div>"
           : "") +
-        '<div class="tooltip-label">Prompt</div><div class="pill-tooltip-prompt">' +
+        '<div class="tooltip-label">提示</div><div class="pill-tooltip-prompt">' +
         escapeHtml(prompt.prompt) +
         "</div></div></div>",
     )
@@ -362,7 +362,7 @@ function pillAttachmentsHtml(prompt) {
   );
 }
 
-const DEFAULT_SEND_HINT = "Write a message or annotate an element first.";
+const DEFAULT_SEND_HINT = "请先写消息或标注一个元素。";
 
 function showSendHint(message = DEFAULT_SEND_HINT, holdMs = 2600) {
   sendHint.textContent = message;
@@ -420,7 +420,7 @@ function addChat(role, text, shouldScroll = true) {
 
   const el = document.createElement("div");
   el.className = "bubble " + role;
-  el.innerHTML = "<small>" + (role === "agent" ? "Agent" : "You") + "</small><div>" + escapeHtml(text) + "</div>";
+  el.innerHTML = "<small>" + (role === "agent" ? "Agent" : "你") + "</small><div>" + escapeHtml(text) + "</div>";
   chatLog.appendChild(el);
   if (shouldScroll) scrollElementIntoView(el);
   return el;
@@ -455,7 +455,7 @@ function setAgentPresence(state) {
   if (!workingBubble) {
     workingBubble = document.createElement("div");
     workingBubble.className = "bubble agent agent-working";
-    workingBubble.innerHTML = '<span class="spinner"></span><span>Working...</span>';
+    workingBubble.innerHTML = '<span class="spinner"></span><span>正在处理...</span>';
     chatLog.appendChild(workingBubble);
   }
   scrollElementIntoView(workingBubble);
@@ -543,7 +543,7 @@ function sendQueued(endAfter) {
 
   const text = chatInput.value.trim();
   if (text) {
-    queued.push({ uid: "", prompt: text, selector: "", tag: "message", text: "Freeform message" });
+    queued.push({ uid: "", prompt: text, selector: "", tag: "message", text: "自由消息" });
     persistQueuedPrompts();
     addChat("user", text);
     chatInput.value = "";
@@ -645,14 +645,14 @@ function setLayoutGateCard(state) {
   if (!layoutGateTitle || !layoutGateCopy) return;
 
   if (state === "held") {
-    layoutGateTitle.innerHTML = "Fixing a layout issue...";
+    layoutGateTitle.innerHTML = "正在修复布局问题...";
     layoutGateCopy.textContent =
-      "The browser found inaccessible or unusable content. Your agent has been notified and this will reveal after the next clean reload.";
+      "浏览器发现不可访问或不可用的内容。你的 agent 已收到通知，下一次干净重载后会自动显示。";
     return;
   }
 
-  layoutGateTitle.innerHTML = "Checking layout.<br>One moment.";
-  layoutGateCopy.textContent = "Lavish is waiting for fonts and final geometry before revealing this artifact.";
+  layoutGateTitle.innerHTML = "正在检查布局。<br>请稍候。";
+  layoutGateCopy.textContent = "Lavish 正在等待字体和最终几何信息，然后才会显示此产物。";
 }
 
 function setLayoutGateActive(active) {
@@ -840,7 +840,7 @@ function createWarningRow(warning) {
   const pending = pendingLayoutWarningIds().has(warning.id);
   const selectable = warning.selectable && !pending;
   const unavailableLabel = pending ? "is queued to send" : "is already queued for a fix";
-  const statusLabel = pending ? "Queued for send" : warning.status_label;
+  const statusLabel = pending ? "已排队待发送" : warning.status_label;
 
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
@@ -850,7 +850,7 @@ function createWarningRow(warning) {
   checkbox.setAttribute(
     "aria-label",
     selectable
-      ? "Select " + warning.title + " on " + warning.viewport_label
+      ? "选择 " + warning.title + " 于 " + warning.viewport_label
       : warning.title + " on " + warning.viewport_label + " " + unavailableLabel,
   );
   checkbox.addEventListener("change", () => {
@@ -876,16 +876,16 @@ function createWarningRow(warning) {
 
   const meta = document.createElement("div");
   meta.className = "warning-meta";
-  meta.appendChild(createWarningChip("Severe", "severity"));
+  meta.appendChild(createWarningChip("严重", "severity"));
   meta.appendChild(createWarningChip(statusLabel, "status-" + warning.status));
   meta.appendChild(createWarningChip(warning.viewport_label + " · " + warning.viewport_width + "px"));
   const seen = warningRelativeTime(warning.last_seen_at);
-  if (seen) meta.appendChild(createWarningChip("Seen " + seen));
+  if (seen) meta.appendChild(createWarningChip("已见 " + seen));
   body.appendChild(meta);
 
   const target = document.createElement("code");
   target.className = "warning-target";
-  target.textContent = warning.selector || "(whole page)";
+  target.textContent = warning.selector || "（整页）";
   body.appendChild(target);
 
   const actions = document.createElement("div");
@@ -894,7 +894,7 @@ function createWarningRow(warning) {
     const reveal = document.createElement("button");
     reveal.type = "button";
     reveal.className = "warning-action";
-    reveal.textContent = "Reveal";
+    reveal.textContent = "显示";
     reveal.setAttribute("aria-label", "Reveal " + warning.title + " in the artifact");
     reveal.addEventListener("click", () => revealWarning(warning));
     actions.appendChild(reveal);
@@ -902,12 +902,12 @@ function createWarningRow(warning) {
   const dismiss = document.createElement("button");
   dismiss.type = "button";
   dismiss.className = "warning-action";
-  dismiss.textContent = "Dismiss";
+  dismiss.textContent = "忽略";
   dismiss.disabled = !selectable;
   dismiss.setAttribute(
     "aria-label",
     selectable
-      ? "Dismiss " + warning.title + " for this artifact revision"
+      ? "忽略 " + warning.title + "（此产物版本）"
       : warning.title + " cannot be dismissed while " + (pending ? "queued to send" : "a fix is queued"),
   );
   dismiss.addEventListener("click", () => dismissWarning(warning.id));
@@ -935,21 +935,18 @@ function renderWarnings() {
   warningsWrap.hidden = count === 0 || ended;
   if (warningsWrap.hidden && warningsDrawerOpen) setWarningsDrawerOpen(false);
   warningsCount.textContent = String(count);
-  warningsButton.setAttribute(
-    "aria-label",
-    count === 1 ? "1 unresolved layout issue" : count + " unresolved layout issues",
-  );
+  warningsButton.setAttribute("aria-label", count === 1 ? "1 个未解决布局问题" : count + " 个未解决布局问题");
 
   const outstanding = active.filter((warning) => warning.outstanding).length;
   warningsSummary.textContent =
-    (count === 1 ? "1 unresolved issue" : count + " unresolved issues") +
-    (outstanding > 0 ? " · " + outstanding + " already queued for a fix" : "");
+    (count === 1 ? "1 个未解决问题" : count + " 个未解决问题") +
+    (outstanding > 0 ? " · " + outstanding + " 个已排队待修复" : "");
 
   warningsList.replaceChildren();
   if (count === 0) {
     const empty = document.createElement("p");
     empty.className = "warnings-empty";
-    empty.textContent = "No unresolved layout issues.";
+    empty.textContent = "没有未解决的布局问题。";
     warningsList.appendChild(empty);
   } else {
     for (const warning of active) warningsList.appendChild(createWarningRow(warning));
@@ -965,7 +962,7 @@ function updateWarningSelectionState() {
   // Default selection is never "everything": Select all is an explicit action.
   warningsSelectAll.checked = selectable.length > 0 && selectedCount === selectable.length;
   warningsSelectAll.indeterminate = selectedCount > 0 && selectedCount < selectable.length;
-  warningsSelected.textContent = selectedCount === 0 ? "None selected" : selectedCount + " selected";
+  warningsSelected.textContent = selectedCount === 0 ? "未选择" : "已选择 " + selectedCount + " 项";
   warningsQueueButton.disabled = selectedCount === 0 || ended || agentPresence === "working";
 }
 
@@ -1094,11 +1091,11 @@ function markSessionEnded() {
 function copyFilePath() {
   copyText(filePath);
   copyHint.classList.add("copied");
-  copyHintText.textContent = "Copied";
+  copyHintText.textContent = "已复制";
   clearTimeout(copyHintTimer);
   copyHintTimer = setTimeout(() => {
     copyHint.classList.remove("copied");
-    copyHintText.textContent = "Copy";
+    copyHintText.textContent = "复制";
   }, 1600);
 }
 
@@ -1118,26 +1115,26 @@ function setExportLabel(text) {
 }
 
 function unresolvedAssetText(count) {
-  return count === 1 ? "1 unresolved asset" : `${count} unresolved assets`;
+  return count === 1 ? "1 个未解析资源" : `${count} 个未解析资源`;
 }
 
 function noticeText(count) {
-  return count === 1 ? "1 notice" : `${count} notices`;
+  return count === 1 ? "1 条通知" : `${count} 条通知`;
 }
 
 function exportWarningText(unresolvedCount, noticeCount) {
   if (unresolvedCount > 0 && noticeCount > 0) {
-    return `${unresolvedAssetText(unresolvedCount)} and ${noticeText(noticeCount)}`;
+    return `，含 ${unresolvedAssetText(unresolvedCount)}和 ${noticeText(noticeCount)}`;
   }
-  if (unresolvedCount > 0) return unresolvedAssetText(unresolvedCount);
-  return noticeText(noticeCount);
+  if (unresolvedCount > 0) return `，含 ${unresolvedAssetText(unresolvedCount)}`;
+  return `，含 ${noticeText(noticeCount)}`;
 }
 
 async function exportArtifact() {
   // The bundle inlines local assets server-side, so it can take a moment - keep the menu open
   // and narrate progress in place instead of closing it and leaving the user with no feedback.
   exportArtifactButton.disabled = true;
-  setExportLabel("Exporting...");
+  setExportLabel("正在导出...");
   try {
     const response = await fetch("/api/" + key + "/export");
     if (!response.ok) throw new Error("export failed");
@@ -1153,13 +1150,13 @@ async function exportArtifact() {
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
     if (warningCount > 0 || noticeCount > 0) {
-      setExportLabel(`Exported with ${exportWarningText(warningCount, noticeCount)}`);
+      setExportLabel(`已导出${exportWarningText(warningCount, noticeCount)}`);
     } else {
-      setExportLabel("Export standalone HTML");
+      setExportLabel("导出独立 HTML");
       closeMenus();
     }
   } catch {
-    setExportLabel("Export failed - retry");
+    setExportLabel("导出失败 - 重试");
   } finally {
     exportArtifactButton.disabled = false;
   }
@@ -1181,7 +1178,7 @@ function closeShareDialog() {
 
 async function copyToButton(value, button, label) {
   await copyText(value);
-  button.textContent = "Copied";
+  button.textContent = "已复制";
   setTimeout(() => {
     button.textContent = label;
   }, 1200);
@@ -1191,7 +1188,7 @@ async function publishShare(event) {
   event.preventDefault();
   sharePublishButton.disabled = true;
   shareStatus.classList.remove("error");
-  shareStatus.textContent = "Publishing to ht-ml.app...";
+  shareStatus.textContent = "正在发布到 ht-ml.app...";
   shareResult.hidden = true;
   const password = sharePasswordInput.value.trim();
   const passwordProtected = Boolean(password);
@@ -1212,12 +1209,12 @@ async function publishShare(event) {
     const noticeSummary = noticeCount ? noticeText(noticeCount) : "";
     shareStatus.textContent =
       warningCount > 0
-        ? `Published with ${warningCount === 1 ? "1 unresolved local asset" : `${warningCount} unresolved local assets`}${noticeSummary ? ` and ${noticeSummary}` : ""}.${passwordProtected ? " This page is PASSWORD-PROTECTED; viewers also need the password." : ""}`
+        ? `已发布，含 ${warningCount === 1 ? "1 个未解析本地资源" : `${warningCount} 个未解析本地资源`}${noticeSummary ? `和 ${noticeSummary}` : ""}。${passwordProtected ? " 此页面受密码保护；查看者也需要密码。" : ""}`
         : noticeCount > 0
-          ? `Published with ${noticeSummary}.${passwordProtected ? " This page is PASSWORD-PROTECTED; viewers also need the password." : ""}`
+          ? `已发布，含 ${noticeSummary}。${passwordProtected ? " 此页面受密码保护；查看者也需要密码。" : ""}`
           : passwordProtected
-            ? "Published. This page is PASSWORD-PROTECTED; viewers also need the password."
-            : "Published. Anyone with the link can view this page.";
+            ? "已发布。此页面受密码保护；查看者也需要密码。"
+            : "已发布。任何持有链接的人都能查看此页面。";
     shareResult.hidden = false;
     shareUrlInput.focus();
     shareUrlInput.select();
@@ -1433,7 +1430,7 @@ async function handleWhiteboardReady(index, mode, isCurrent) {
     return true;
   } catch (error) {
     if (mode === "overlay") {
-      showWhiteboardError("Could not open the whiteboard: " + (error instanceof Error ? error.message : String(error)));
+      showWhiteboardError("无法打开白板：" + (error instanceof Error ? error.message : String(error)));
     }
     return false;
   }
@@ -1965,7 +1962,7 @@ async function uploadAttachment(message) {
       nonce,
       localId,
       ok: false,
-      error: "Image is larger than the " + formatByteLimit(attachmentMaxBytes) + " limit",
+      error: "图片超出 " + formatByteLimit(attachmentMaxBytes) + " 限制",
     });
     return;
   }
@@ -1978,7 +1975,7 @@ async function uploadAttachment(message) {
       nonce,
       localId,
       ok: false,
-      error: "Too many uploads. Wait a moment and retry.",
+      error: "上传过多，请稍等片刻后重试。",
     });
     return;
   }
@@ -1988,7 +1985,7 @@ async function uploadAttachment(message) {
       nonce,
       localId,
       ok: false,
-      error: "Upload limit reached for this session (" + formatByteLimit(UPLOAD_SESSION_BYTE_QUOTA) + ").",
+      error: "本次会话的上传限额已到（" + formatByteLimit(UPLOAD_SESSION_BYTE_QUOTA) + "）。",
     });
     return;
   }
@@ -2001,7 +1998,7 @@ async function uploadAttachment(message) {
       nonce,
       localId,
       ok: false,
-      error: "Too many uploads in flight. Wait a moment and retry.",
+      error: "进行中的上传过多，请稍等片刻后重试。",
     });
     return;
   }
@@ -2015,7 +2012,7 @@ async function uploadAttachment(message) {
       body: bytes,
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || "Upload failed");
+    if (!response.ok) throw new Error(data.error || "上传失败");
     postToFrame({
       type: "lavish:attachmentResult",
       nonce,

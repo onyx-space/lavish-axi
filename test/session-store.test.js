@@ -459,7 +459,7 @@ test("queueing a warning produces one ordinary prompt and leaves the warning unr
 
     const queued = await store.prepareLayoutWarningFixes(session.key, [first.id]);
     assert.equal(queued.queued.length, 1);
-    assert.match(queued.prompt.prompt, /Fix this layout issue/);
+    assert.match(queued.prompt.prompt, /修复浏览器在此产物中检测到的 这个布局问题/);
     assert.equal(queued.prompt.target.type, "layout-warnings");
     assert.equal(queued.prompt.target.warnings[0].id, first.id);
 
@@ -584,7 +584,7 @@ test("a queued layout-warnings prompt is normalized like ordinary feedback", asy
           prompt: "Fix these layout issues",
           selector: "",
           tag: "layout-warnings",
-          text: "Layout issues: 1 selected",
+          text: "已选中 1 个布局问题",
           target: {
             type: "layout-warnings",
             warnings: [{ id: "abc", rule: "clipped-text", selector: "p", axis: "vertical", overflow_px: 27 }],

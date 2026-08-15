@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from "node:child_process";
+import { execFile, spawn, spawnSync } from "node:child_process";
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { access, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -251,15 +251,17 @@ async function openCommand(args) {
   const selfPaintWarning = await selfPaintWarningForFile(absolute);
   const noGate = args.includes("--no-gate");
   const reopen = args.includes("--reopen");
-  const baseUrl = await ensureServer({ forceRestart: shouldForceRestartForLocalBuild(process.argv[1] || "") });
+  const baseUrl = await ensureServer({
+    // 仓库源码模式下每次打开都强制重启 server，确保改动立即生效（fork 定制）
+    forceRestart: shouldForceRestartForLocalBuild(process.argv[1] || "") || localSourceServerExists(),
+  });
   const response = await postJson(`${baseUrl}/api/sessions`, { file: absolute, noGate, reopen });
   if (response.status === "user-ended") {
     return createUserEndedOpenOutput({ file: absolute, url: response.url });
   }
   if (shouldOpenBrowser(args, process.env)) {
     try {
-      const open = (await import("open")).default;
-      await open(response.url);
+      await openLavishBrowser(response.url);
     } catch {
       response.status = "ready";
     }
@@ -285,6 +287,61 @@ async function selfPaintWarningForFile(absolute) {
 
 export function shouldOpenBrowser(args, env) {
   return !args.includes("--no-open") && env.LAVISH_AXI_NO_OPEN !== "1";
+}
+
+// fork 定制：AI 专用浏览器 = Chrome（用户日常用 Edge 不碰）。
+// macOS 打开策略（避免抢用户前台焦点）：
+//   1. Chrome 未运行 → `open -g -a Chrome` 冷启动（静默后台）
+//   2. Chrome 运行且所有标签都是 lavishly 的 → 退出 Chrome 后冷启动（静默）
+//   3. Chrome 运行但含非 lavishly 标签（用户的东西）→ 新开独立 Chrome 实例（--user-data-dir），不碰现有窗口
+async function openLavishBrowser(url) {
+  if (process.platform !== "darwin") {
+    const open = (await import("open")).default;
+    await open(url, { wait: false });
+    return;
+  }
+  const run = (cmd, args) =>
+    new Promise((resolve, reject) => {
+      execFile(cmd, args, (err, stdout) => (err ? reject(err) : resolve(String(stdout || ""))));
+    });
+  const chromeRunning = await run("pgrep", ["-x", "Google Chrome"])
+    .then(() => true)
+    .catch(() => false);
+  if (!chromeRunning) {
+    // 冷启动：open -g 静默后台，不抢焦点
+    await run("open", ["-g", "-a", "Google Chrome", url]);
+    return;
+  }
+  // Chrome 在跑：收集所有标签 URL，判断是否全是 lavishly 的
+  const allUrls = await run("osascript", [
+    "-e",
+    'tell application "Google Chrome"\nset out to ""\nrepeat with w in windows\nrepeat with t in tabs of w\nset out to out & (URL of t) & linefeed\nend repeat\nend repeat\nreturn out\nend tell',
+  ])
+    .then((text) =>
+      text
+        .split(/\n+/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+    )
+    .catch(() => []);
+  const allLavish = allUrls.length > 0 && allUrls.every((u) => u.includes(":4387"));
+  if (allLavish) {
+    // 全是 lavishly 的：退出 Chrome，冷启动重开（静默）
+    await run("osascript", ["-e", 'tell application "Google Chrome" to quit']).catch(() => {});
+    // 等 Chrome 完全退出
+    for (let i = 0; i < 50; i++) {
+      const still = await run("pgrep", ["-x", "Google Chrome"])
+        .then(() => true)
+        .catch(() => false);
+      if (!still) break;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    await run("open", ["-g", "-a", "Google Chrome", url]);
+    return;
+  }
+  // Chrome 有用户的东西：新开独立实例（不碰现有窗口，也不激活）
+  const profileDir = path.join(os.tmpdir(), "lavish-ai-chrome");
+  await run("open", ["-g", "-na", "Google Chrome", "--args", `--user-data-dir=${profileDir}`, url]);
 }
 
 async function pollCommand(args) {

@@ -1190,7 +1190,7 @@ test("a queued layout-warnings batch reads as ordinary feedback with lifecycle g
           prompt: "Fix these 2 layout issues the browser detected in this artifact:\\n1. [w1] ...",
           selector: "",
           tag: "layout-warnings",
-          text: "Layout issues: 2 selected",
+          text: "已选中 2 个布局问题",
           target: { type: "layout-warnings", warnings: [{ id: "w1" }, { id: "w2" }] },
         },
       ],

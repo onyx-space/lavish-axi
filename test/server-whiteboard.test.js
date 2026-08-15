@@ -85,7 +85,7 @@ test("whiteboard confirms sanitized links inside the frame", async () => {
   assert.doesNotMatch(frame, /window\.confirm/);
   assert.match(frame, /setAttribute\("role", "dialog"\)/);
   assert.match(frame, /setAttribute\("aria-modal", "true"\)/);
-  assert.match(frame, /setAttribute\("aria-label", "Open external link"\)/);
+  assert.match(frame, /setAttribute\("aria-label", "打开外部链接"\)/);
   assert.match(frame, /event\.key === "Escape"/);
   assert.match(frame, /event\.key !== "Tab"/);
   assert.match(frame, /window\.open\(safe, "_blank", "noopener,noreferrer"\)/);

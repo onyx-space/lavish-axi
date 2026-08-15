@@ -40,9 +40,9 @@ export function viewportClassFor(viewportWidth) {
 }
 
 export function viewportClassLabel(viewportClass) {
-  if (viewportClass === "mobile") return "Mobile";
-  if (viewportClass === "compact") return "Tablet / compact";
-  return "Desktop";
+  if (viewportClass === "mobile") return "手机";
+  if (viewportClass === "compact") return "平板 / 紧凑";
+  return "桌面";
 }
 
 // Stable identity: the diagnostic rule, the normalized target identity, and the viewport class.
@@ -68,33 +68,33 @@ export function componentIdentity(selector) {
 
 const RULE_DESCRIPTIONS = {
   "page-horizontal-overflow": {
-    title: "Page scrolls sideways",
+    title: "页面横向溢出",
     explain: (warning) =>
-      `The page is ${pxText(warning.overflowPx)} wider than the ${pxText(warning.viewportWidth)} viewport, so content sits off-screen.`,
+      `页面比 ${pxText(warning.viewportWidth)} 的视口宽 ${pxText(warning.overflowPx)}，部分内容跑到屏幕外了。`,
   },
   "clipped-text": {
-    title: "Text cut off by its container",
+    title: "文本被容器截断",
     explain: (warning) =>
-      `Rendered text crosses its container's ${axisEdge(warning.axis)} edge by ${pxText(warning.overflowPx)} and is hidden.`,
+      `渲染出的文本超出容器的${axisEdge(warning.axis)}边缘 ${pxText(warning.overflowPx)} 并被隐藏。`,
   },
   "clipped-control": {
-    title: "Control cut off by its container",
+    title: "控件被容器截断",
     explain: (warning) =>
-      `A required control crosses its container's ${axisEdge(warning.axis)} edge by ${pxText(warning.overflowPx)}, so part of it cannot be used.`,
+      `一个必需控件超出容器的${axisEdge(warning.axis)}边缘 ${pxText(warning.overflowPx)}，部分无法使用。`,
   },
   "viewport-unreachable-control": {
-    title: "Control outside the viewport",
+    title: "控件在视口外",
     explain: (warning) =>
-      `A required control sits ${pxText(warning.overflowPx)} outside the ${axisEdge(warning.axis)} edge of the viewport and cannot be reached.`,
+      `一个必需控件位于视口${axisEdge(warning.axis)}边缘外 ${pxText(warning.overflowPx)}，无法触达。`,
   },
   "viewport-unreachable-content": {
-    title: "Text outside the viewport",
+    title: "文本在视口外",
     explain: (warning) =>
-      `Rendered text sits ${pxText(warning.overflowPx)} outside the ${axisEdge(warning.axis)} edge of the viewport and cannot be read.`,
+      `渲染出的文本位于视口${axisEdge(warning.axis)}边缘外 ${pxText(warning.overflowPx)}，无法阅读。`,
   },
   "overlapping-text": {
-    title: "Text covered by another element",
-    explain: () => "An opaque sibling covers nearly all of this text, so it cannot be read.",
+    title: "文本被其他元素遮挡",
+    explain: () => "一个不透明的兄弟元素几乎完全盖住了这段文本，导致无法阅读。",
   },
 };
 
@@ -109,26 +109,26 @@ export function describeLayoutWarning(warning) {
   const description = RULE_DESCRIPTIONS[warning?.rule ?? warning?.kind];
   if (!description) {
     return {
-      title: "Layout failure",
-      explanation: `The browser proved a severe layout failure on this element${normalized.overflowPx ? ` (${pxText(normalized.overflowPx)})` : ""}.`,
+      title: "布局故障",
+      explanation: `浏览器证明此元素存在严重布局故障${normalized.overflowPx ? `（${pxText(normalized.overflowPx)}）` : ""}。`,
     };
   }
   return { title: description.title, explanation: description.explain(normalized) };
 }
 
 const STATUS_LABELS = {
-  open: "Open",
-  queued: "Queued for fix",
-  recurring: "Still present",
-  unverified: "Unverified",
-  reopened: "Returned",
-  resolved: "Resolved",
-  dismissed: "Dismissed",
-  obsolete: "Obsolete",
+  open: "未解决",
+  queued: "已排队待修复",
+  recurring: "仍然存在",
+  unverified: "未验证",
+  reopened: "已复现",
+  resolved: "已解决",
+  dismissed: "已忽略",
+  obsolete: "已过时",
 };
 
 export function layoutWarningStatusLabel(status) {
-  return STATUS_LABELS[status] || "Open";
+  return STATUS_LABELS[status] || "未解决";
 }
 
 export function isActiveLayoutWarning(warning) {
@@ -322,14 +322,14 @@ export function layoutWarningPromptPayload(warnings) {
   const selected = normalizeStoredWarnings(warnings).slice(0, MAX_QUEUED_WARNINGS_PER_PROMPT);
   const lines = selected.map((warning, index) => {
     const { title, explanation } = describeLayoutWarning(warning);
-    return `${index + 1}. [${warning.id}] ${title} - ${explanation} Target: ${warning.selector || "(page)"}. Viewport: ${viewportClassLabel(warning.viewport_class)} (${pxText(warning.viewport_width)}). Status: ${layoutWarningStatusLabel(warning.status)}.`;
+    return `${index + 1}. [${warning.id}] ${title} - ${explanation} 目标：${warning.selector || "（整页）"}。视口：${viewportClassLabel(warning.viewport_class)}（${pxText(warning.viewport_width)}）。状态：${layoutWarningStatusLabel(warning.status)}。`;
   });
   const count = selected.length;
   const prompt =
-    `Fix ${count === 1 ? "this layout issue" : `these ${count} layout issues`} the browser detected in this artifact:\n` +
+    `修复浏览器在此产物中检测到的 ${count === 1 ? "这个布局问题" : `这 ${count} 个布局问题`}：\n` +
     `${lines.join("\n")}\n\n` +
-    "Apply every listed fix in one pass before saving so the review refreshes once. " +
-    "A queued layout issue is a repair request, not a resolved issue: Lavish only marks it resolved after a newer artifact load and a complete diagnostic pass for the same viewport no longer detects it.";
+    "请一次性地把列出的所有修复都做掉再保存，这样审阅只刷新一次。 " +
+    "已排队的布局问题只是修复请求，不等于已解决：Lavish 只有在更新产物加载且同一视口完成一次完整诊断不再检出该问题后，才会把它标记为已解决。";
   const target = {
     type: "layout-warnings",
     artifact_revision: Math.max(0, Math.trunc(finiteNumber(selected[0]?.queued_revision))),
@@ -348,7 +348,7 @@ export function layoutWarningPromptPayload(warnings) {
   };
   return {
     prompt,
-    text: count === 1 ? "Layout issue: 1 selected" : `Layout issues: ${count} selected`,
+    text: count === 1 ? "已选中 1 个布局问题" : `已选中 ${count} 个布局问题`,
     target,
   };
 }
@@ -560,5 +560,5 @@ function pxText(value) {
 }
 
 function axisEdge(axis) {
-  return axis === "vertical" ? "bottom" : "right";
+  return axis === "vertical" ? "下" : "右";
 }

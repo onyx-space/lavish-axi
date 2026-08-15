@@ -463,7 +463,7 @@ export function createArtifactSdk(
     else if (item.status === "error")
       status =
         '<span class="lavish-attachment-status lavish-attachment-status-error">' +
-        escapeAnnotationText(item.error || "Upload failed") +
+        escapeAnnotationText(item.error || "上传失败") +
         "</span>";
     // Only a real (retryable) upload gets a Retry button; a rejected non-image has no file.
     const retry =
@@ -552,7 +552,7 @@ export function createArtifactSdk(
         .catch(() => {
           if (!items.includes(item)) return;
           item.status = "error";
-          item.error = "Could not read image";
+          item.error = "无法读取图片";
           render();
         });
     }
@@ -653,7 +653,7 @@ export function createArtifactSdk(
           item.error = "";
         } else {
           item.status = "error";
-          item.error = String(error || "Upload failed");
+          item.error = String(error || "上传失败");
         }
         render();
       }
@@ -2148,16 +2148,16 @@ export function createArtifactSdk(
     const nodeLabel = c.tag === "mermaid-node" ? c.target?.label || c.text || "" : "";
     const heading =
       c.tag === "text"
-        ? "Annotate text"
+        ? "标注文本"
         : c.tag === "mermaid-node"
-          ? "Annotate node" + (nodeLabel ? ": " + escapeAnnotationText(nodeLabel) : "")
-          : "Annotate &lt;" + c.tag + "&gt;";
+          ? "标注节点" + (nodeLabel ? "：" + escapeAnnotationText(nodeLabel) : "")
+          : "标注 &lt;" + c.tag + "&gt;";
     const placeholder =
       c.tag === "text"
-        ? "Tell the agent what to change about this text..."
+        ? "告诉 agent 想对这个文本做什么改动..."
         : c.tag === "mermaid-node"
-          ? "Tell the agent what to change about this diagram node..."
-          : "Tell the agent what to change about this element...";
+          ? "告诉 agent 想对这个图节点做什么改动..."
+          : "告诉 agent 想对这个元素做什么改动...";
     const sendNowHint = /Mac|iP(hone|ad|od)/.test(navigator.platform) ? "⌘" : "Ctrl";
     card.innerHTML =
       '<div class="lavish-heading">' +
@@ -2167,12 +2167,12 @@ export function createArtifactSdk(
       '"></textarea><div class="lavish-attachments" data-attachments hidden></div>' +
       '<div class="lavish-attach-row"><button class="lavish-attach" type="button">' +
       '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
-      "<span>Attach image</span></button>" +
+      "<span>附加图片</span></button>" +
       '<input class="lavish-attach-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>' +
-      '<div class="lavish-hint">Enter to queue &middot; ' +
+      '<div class="lavish-hint">回车排队 &middot; ' +
       sendNowHint +
-      "+Enter to send &middot; paste or drop an image" +
-      '</div><div class="lavish-row"><button class="lavish-cancel" type="button">Cancel</button><button class="lavish-send" type="button">Queue</button></div>';
+      "+回车发送 &middot; 粘贴或拖入图片" +
+      '</div><div class="lavish-row"><button class="lavish-cancel" type="button">取消</button><button class="lavish-send" type="button">排队</button></div>';
     root.appendChild(card);
 
     // Clamp the card fully inside the viewport. Called again whenever its height
@@ -2283,7 +2283,8 @@ export function createArtifactSdk(
 
     cancelButton.onclick = closeCard;
     sendButton.onclick = () => {
-      tryQueue();
+      // 排队即发送：把这条加进队列并立即提交，无需再点「发送给 Agent」
+      if (tryQueue()) sendQueuedPrompts();
     };
     textarea.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {

@@ -603,7 +603,7 @@ test("chrome mediates attachment uploads: rate + cumulative-byte ceiling (confus
   assert.equal(fetches, 0, "quota-exceeding upload never hits the network");
   const quotaResult = chrome.postedToFrame.find((m) => m.type === "lavish:attachmentResult" && m.localId === "big");
   assert.equal(quotaResult.ok, false);
-  assert.match(quotaResult.error, /Upload limit reached/);
+  assert.match(quotaResult.error, /上传限额/);
 
   // Small uploads flow until the per-window rate cap (30), then are throttled. Each
   // is let settle before the next so the in-flight bound (its own test) never blocks;
@@ -629,7 +629,7 @@ test("chrome mediates attachment uploads: rate + cumulative-byte ceiling (confus
   assert.equal(fetches, 30, "the 31st upload in the window is throttled, not sent");
   const throttled = chrome.postedToFrame.find((m) => m.type === "lavish:attachmentResult" && m.localId === "throttled");
   assert.equal(throttled.ok, false);
-  assert.match(throttled.error, /Too many uploads/);
+  assert.match(throttled.error, /上传过多/);
 });
 
 test("chrome only mediates uploads carrying the current artifact load token", async () => {
@@ -791,7 +791,7 @@ test("the warning button hides at zero and shows a deduplicated unresolved count
 
   assert.equal(chrome.element("warningsWrap").hidden, false);
   assert.equal(chrome.element("warningsCount").textContent, "2");
-  assert.equal(chrome.element("warningsButton")["aria-label"], "2 unresolved layout issues");
+  assert.equal(chrome.element("warningsButton")["aria-label"], "2 个未解决布局问题");
   assert.equal(chrome.warningRows().length, 2);
 
   // The same warnings arriving again must not inflate anything.
@@ -823,7 +823,7 @@ test("nothing is selected by default and Select all is an explicit action", asyn
   });
 
   assert.equal(chrome.element("warningsSelectAll").checked, false);
-  assert.equal(chrome.element("warningsSelected").textContent, "None selected");
+  assert.equal(chrome.element("warningsSelected").textContent, "未选择");
   assert.equal(chrome.element("warningsQueueButton").disabled, true);
   for (const row of chrome.warningRows()) {
     assert.equal(row.children[0].checked, false);
@@ -831,7 +831,7 @@ test("nothing is selected by default and Select all is an explicit action", asyn
 
   chrome.element("warningsSelectAll").checked = true;
   chrome.element("warningsSelectAll").onchange();
-  assert.equal(chrome.element("warningsSelected").textContent, "2 selected");
+  assert.equal(chrome.element("warningsSelected").textContent, "已选择 2 项");
   assert.equal(chrome.element("warningsQueueButton").disabled, false);
 });
 
@@ -851,8 +851,8 @@ test("queueing a selected subset produces exactly one ordinary prompt with only 
           queued_count: 1,
           warnings: queuedWarnings,
           prompt: {
-            prompt: "Fix this layout issue the browser detected in this artifact:\n1. [w1] ...",
-            text: "Layout issue: 1 selected",
+            prompt: "修复浏览器在此产物中检测到的 这个布局问题：\n1. [w1] ...",
+            text: "已选中 1 个布局问题",
             target: { type: "layout-warnings", warnings: [{ id: "w1", rule: "page-horizontal-overflow" }] },
           },
         }),
@@ -866,7 +866,7 @@ test("queueing a selected subset produces exactly one ordinary prompt with only 
   const [first] = chrome.warningRows();
   first.children[0].checked = true;
   first.children[0].dispatch("change");
-  assert.equal(chrome.element("warningsSelected").textContent, "1 selected");
+  assert.equal(chrome.element("warningsSelected").textContent, "已选择 1 项");
 
   await chrome.element("warningsQueueButton").onclick();
   await flushPromises();
@@ -884,8 +884,8 @@ test("queueing a selected subset produces exactly one ordinary prompt with only 
   assert.equal(chrome.element("warningsCount").textContent, "2");
   assert.equal(chrome.warningRows()[0].children[0].disabled, true);
   assert.equal(chrome.warningRows()[0].children[1].children.at(-1).children.at(-1).disabled, true);
-  assert.equal(chrome.warningRows()[0].children[1].children[2].children[1].textContent, "Queued for send");
-  assert.equal(chrome.element("warningsSelected").textContent, "None selected");
+  assert.equal(chrome.warningRows()[0].children[1].children[2].children[1].textContent, "已排队待发送");
+  assert.equal(chrome.element("warningsSelected").textContent, "未选择");
 });
 
 test("a stale queued layout prompt remains available for user re-decision", async () => {
@@ -900,8 +900,8 @@ test("a stale queued layout prompt remains available for user re-decision", asyn
             queued_count: 1,
             warnings: [warningPayload()],
             prompt: {
-              prompt: "Fix this layout issue",
-              text: "Layout issue: 1 selected",
+              prompt: "修复浏览器在此产物中检测到的 这个布局问题",
+              text: "已选中 1 个布局问题",
               target: { type: "layout-warnings", artifact_revision: 1, warnings: [{ id: "w1" }] },
             },
           }),
@@ -930,7 +930,7 @@ test("a stale queued layout prompt remains available for user re-decision", asyn
 
   assert.ok(posts.some((post) => post.url === "/api/abc/prompts"));
   assert.equal(chrome.queued().length, 1);
-  assert.equal(chrome.warningRows()[0].children[1].children[2].children[1].textContent, "Queued for send");
+  assert.equal(chrome.warningRows()[0].children[1].children[2].children[1].textContent, "已排队待发送");
 });
 
 test("dismissing a warning asks the server and never clears it locally on failure", async () => {
@@ -1007,7 +1007,7 @@ test("warning state and selection survive a chrome reload of the same session", 
   const [row] = first.warningRows();
   row.children[0].checked = true;
   row.children[0].dispatch("change");
-  assert.equal(first.element("warningsSelected").textContent, "1 selected");
+  assert.equal(first.element("warningsSelected").textContent, "已选择 1 项");
 
   // A browser refresh re-bootstraps from the server, and the chrome's own selection is restored
   // from per-session storage.
@@ -1021,7 +1021,7 @@ test("warning state and selection survive a chrome reload of the same session", 
     },
   });
   assert.equal(reloaded.element("warningsCount").textContent, "2");
-  assert.equal(reloaded.element("warningsSelected").textContent, "1 selected");
+  assert.equal(reloaded.element("warningsSelected").textContent, "已选择 1 项");
 });
 
 test("warning state does not leak across review sessions", async () => {
@@ -1038,7 +1038,7 @@ test("warning state does not leak across review sessions", async () => {
     sessionData: { key: "zzz", file: "/tmp/other.html", modeToggleHotkeyKey: "i" },
   });
   assert.equal(other.element("warningsWrap").hidden, true);
-  assert.equal(other.element("warningsSelected").textContent, "None selected");
+  assert.equal(other.element("warningsSelected").textContent, "未选择");
 });
 
 test("chrome client surfaces export warnings from the server response", async () => {
@@ -1058,7 +1058,7 @@ test("chrome client surfaces export warnings from the server response", async ()
   await chrome.element("exportArtifact").onclick();
   await flushPromises();
 
-  assert.equal(chrome.element("exportArtifact").querySelector("span").textContent, "Exported with 1 unresolved asset");
+  assert.equal(chrome.element("exportArtifact").querySelector("span").textContent, "已导出，含 1 个未解析资源");
 });
 
 test("chrome client surfaces export notices from the server response", async () => {
@@ -1079,7 +1079,7 @@ test("chrome client surfaces export notices from the server response", async () 
   await chrome.element("exportArtifact").onclick();
   await flushPromises();
 
-  assert.equal(chrome.element("exportArtifact").querySelector("span").textContent, "Exported with 1 notice");
+  assert.equal(chrome.element("exportArtifact").querySelector("span").textContent, "已导出，含 1 条通知");
 });
 
 test("chrome client includes export notices alongside unresolved assets", async () => {
@@ -1102,7 +1102,7 @@ test("chrome client includes export notices alongside unresolved assets", async 
 
   assert.equal(
     chrome.element("exportArtifact").querySelector("span").textContent,
-    "Exported with 2 unresolved assets and 1 notice",
+    "已导出，含 2 个未解析资源和 1 条通知",
   );
 });
 
@@ -1128,7 +1128,7 @@ test("chrome client surfaces share warnings from the server response", async () 
   await submit({ preventDefault() {} });
   await flushPromises();
 
-  assert.equal(chrome.element("shareStatus").textContent, "Published with 1 unresolved local asset and 1 notice.");
+  assert.equal(chrome.element("shareStatus").textContent, "已发布，含 1 个未解析本地资源和 1 条通知。");
   assert.equal(chrome.element("shareResult").hidden, false);
 });
 
@@ -1150,7 +1150,7 @@ test("chrome client does not count share notices as unresolved assets", async ()
   await submit({ preventDefault() {} });
   await flushPromises();
 
-  assert.equal(chrome.element("shareStatus").textContent, "Published with 1 notice.");
+  assert.equal(chrome.element("shareStatus").textContent, "已发布，含 1 条通知。");
   assert.equal(chrome.element("shareResult").hidden, false);
 });
 
@@ -1200,10 +1200,7 @@ test("chrome client says password-protected shares also require the password", a
   await submit({ preventDefault() {} });
   await flushPromises();
 
-  assert.equal(
-    chrome.element("shareStatus").textContent,
-    "Published. This page is PASSWORD-PROTECTED; viewers also need the password.",
-  );
+  assert.equal(chrome.element("shareStatus").textContent, "已发布。此页面受密码保护；查看者也需要密码。");
 });
 
 test("chrome client treats a whitespace-only share password as public", async () => {
@@ -1228,7 +1225,7 @@ test("chrome client treats a whitespace-only share password as public", async ()
   await flushPromises();
 
   assert.deepEqual(posts, [{}]);
-  assert.equal(chrome.element("shareStatus").textContent, "Published. Anyone with the link can view this page.");
+  assert.equal(chrome.element("shareStatus").textContent, "已发布。任何持有链接的人都能查看此页面。");
 });
 
 test("chrome client registers message listener before loading the artifact iframe", async () => {
@@ -2462,7 +2459,7 @@ test("chrome renders queued-prompt attachment thumbnails from the server endpoin
   assert.match(html, /pill-attachment/);
   assert.match(html, new RegExp("/api/abc/attachments/" + id));
   // An image-only annotation still shows a readable label.
-  assert.match(html, /Image annotation/);
+  assert.match(html, /图片标注/);
 });
 
 test("a queued prompt over the thumbnail limit shows the hidden images as a +N badge (W-A)", async () => {
@@ -2526,7 +2523,7 @@ test("chrome rejects an over-cap image before it hits the network", async () => 
   assert.equal(result.type, "lavish:attachmentResult");
   assert.equal(result.localId, "att-x");
   assert.equal(result.ok, false);
-  assert.match(result.error, /larger than/);
+  assert.match(result.error, /图片超出/);
 });
 
 test("a poisoned attachments array cannot wedge the queue or the tab (E5)", async () => {
@@ -2688,7 +2685,7 @@ test("the chrome bounds concurrent in-flight uploads (D8)", async () => {
     (m) =>
       m.type === "lavish:attachmentResult" &&
       m.ok === false &&
-      /in flight|in-flight|concurrent|Wait a moment/i.test(m.error || ""),
+      /上传过多|进行中的上传过多|稍等|重试/i.test(m.error || ""),
   );
   assert.ok(refused.length >= 4, `the over-bound uploads are refused with a retry hint, got ${refused.length}`);
 
